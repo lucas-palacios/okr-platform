@@ -6,7 +6,7 @@ import { logger } from "hono/logger";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { sql } from "drizzle-orm";
 import { db, client } from "./db/client.js";
 import { teams } from "./db/schema/index.js";
@@ -68,19 +68,27 @@ app.get("/api/health", (c) => c.json({ status: "ok", ts: new Date().toISOString(
 
 // ─── Serve frontend statics in production ────────────────────────────────────
 if (isProd) {
-  // serveStatic root is relative to process.cwd() (repo root in Railway)
+  // __dirname = .../apps/api/src — web dist is always 3 levels up + apps/web/dist
+  const webDistAbsolute = join(__dirname, "../../../apps/web/dist");
+  // serveStatic root must be relative to process.cwd(), so compute it dynamically
+  const serveRoot = relative(process.cwd(), webDistAbsolute);
+
   app.use(
     "/*",
     serveStatic({
-      root: "apps/web/dist",
+      root: serveRoot,
     })
   );
 
   // SPA fallback: serve index.html for any unmatched route
   app.notFound((c) => {
-    const webDistPath = join(process.cwd(), "apps/web/dist");
-    const html = readFileSync(join(webDistPath, "index.html"), "utf-8");
-    return c.html(html, 200);
+    try {
+      const html = readFileSync(join(webDistAbsolute, "index.html"), "utf-8");
+      return c.html(html, 200);
+    } catch (e) {
+      console.error("Frontend dist not found:", e.message);
+      return c.text("Frontend not built. Run: npm run build", 503);
+    }
   });
 } else {
   app.notFound((c) => c.json({ error: "Not found" }, 404));
