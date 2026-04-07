@@ -13,7 +13,7 @@ import { MemberSelect, Avatar } from "@/components/MemberSelect";
 import { CommentsSection } from "@/components/CommentsSection";
 import { useUpdateObjective, useDeleteObjective, useMembers, useObjectiveComments } from "@/hooks/useOkrs";
 import { STATUS_LABELS, OBJECTIVE_STATUSES } from "@/lib/utils";
-import { Pencil, Trash2, Check, X, ExternalLink, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import { Pencil, Trash2, Check, X, ExternalLink, MessageSquare, ChevronDown, ChevronUp, Info } from "lucide-react";
 import type { Objective, KeyResult } from "@/lib/api";
 
 interface Props {
@@ -42,6 +42,15 @@ export function ObjectiveCard({ objective, keyResults }: Props) {
 
   // Comments panel
   const [commentsOpen, setCommentsOpen] = useState(false);
+
+  // KR notes expanded state
+  const [expandedKrNotes, setExpandedKrNotes] = useState<Set<string>>(new Set());
+  const toggleKrNotes = (krId: string) =>
+    setExpandedKrNotes((prev) => {
+      const next = new Set(prev);
+      next.has(krId) ? next.delete(krId) : next.add(krId);
+      return next;
+    });
 
   const saveTitle = () => {
     const trimmed = titleValue.trim();
@@ -214,15 +223,31 @@ export function ObjectiveCard({ objective, keyResults }: Props) {
           {keyResults.map((kr) => (
             <div key={kr.id} className="space-y-1.5 group/kr border-l-2 border-border pl-2">
               <div className="flex items-center justify-between gap-2">
-                <button
-                  className="text-xs font-medium text-foreground/80 text-left hover:text-primary transition-colors flex-1 min-w-0"
-                  onClick={() => setSelectedKr(kr)}
-                >
-                  <span className="font-mono text-muted-foreground mr-1">{kr.code}</span>
-                  <span className="hover:underline underline-offset-2">{kr.title}</span>
-                </button>
+                <div className="flex items-center gap-1 flex-1 min-w-0">
+                  {kr.notes && (
+                    <button
+                      className="shrink-0 text-muted-foreground hover:text-primary transition-colors"
+                      onClick={() => toggleKrNotes(kr.id)}
+                      title={expandedKrNotes.has(kr.id) ? "Ocultar descripción" : "Ver descripción"}
+                    >
+                      <Info className="h-3 w-3" />
+                    </button>
+                  )}
+                  <button
+                    className="text-xs font-medium text-foreground/80 text-left hover:text-primary transition-colors min-w-0"
+                    onClick={() => setSelectedKr(kr)}
+                  >
+                    <span className="font-mono text-muted-foreground mr-1">{kr.code}</span>
+                    <span className="hover:underline underline-offset-2">{kr.title}</span>
+                  </button>
+                </div>
                 <KrStatusSelect krId={kr.id} status={kr.status} />
               </div>
+              {kr.notes && expandedKrNotes.has(kr.id) && (
+                <p className="text-xs text-muted-foreground italic pl-4 pr-2 leading-relaxed">
+                  {kr.notes}
+                </p>
+              )}
               <KrProgressBar kr={kr} />
               <div className="opacity-0 group-hover/kr:opacity-100 transition-opacity">
                 <KrCheckIn krId={kr.id} currentValue={kr.currentValue} targetUnit={kr.targetUnit} />
