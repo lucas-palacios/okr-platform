@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { db } from "../db/client.js";
 import { keyResults, checkIns, objectives } from "../db/schema/index.js";
-import { eq } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 
 const router = new Hono();
@@ -10,7 +10,7 @@ const router = new Hono();
 router.get("/", async (c) => {
   const { objective, status, owner } = c.req.query();
 
-  let rows = await db.select().from(keyResults);
+  let rows = await db.select().from(keyResults).orderBy(asc(keyResults.code));
 
   if (objective) rows = rows.filter((r) => r.objectiveId === objective);
   if (status) rows = rows.filter((r) => r.status === status);

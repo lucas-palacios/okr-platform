@@ -24,7 +24,8 @@ router.get("/", async (c) => {
       owner: objectives.owner,
     })
     .from(objectives)
-    .leftJoin(teams, eq(objectives.teamId, teams.id));
+    .leftJoin(teams, eq(objectives.teamId, teams.id))
+    .orderBy(asc(objectives.code));
 
   if (team) rows = rows.filter((r) => r.teamId === team);
   if (quarter) rows = rows.filter((r) => r.quarter === quarter);
@@ -63,7 +64,8 @@ router.get("/:id/key-results", async (c) => {
   const rows = await db
     .select()
     .from(keyResults)
-    .where(eq(keyResults.objectiveId, id));
+    .where(eq(keyResults.objectiveId, id))
+    .orderBy(asc(keyResults.code));
   return c.json(rows);
 });
 
