@@ -40,7 +40,7 @@ router.get("/:id/check-ins", async (c) => {
 // POST /key-results — create a new KR linked to an objective
 router.post("/", async (c) => {
   const body = await c.req.json();
-  const { objectiveId, title, category, targetValue, targetUnit, targetText, status, owner, dueDate, notes } = body;
+  const { objectiveId, title, category, targetValue, targetUnit, targetText, status, owner, dueDate, notes, baselineValue } = body;
 
   if (!objectiveId || !title) {
     return c.json({ error: "objectiveId and title are required" }, 400);
@@ -73,7 +73,8 @@ router.post("/", async (c) => {
     category: category ?? null,
     targetValue: targetValue !== undefined ? Number(targetValue) : null,
     targetUnit: targetUnit ?? null,
-    currentValue: 0,
+    currentValue: baselineValue !== undefined ? Number(baselineValue) : 0,
+    baselineValue: baselineValue !== undefined ? Number(baselineValue) : null,
     targetText: targetText ?? null,
     status: status ?? "not-started",
     owner: owner ?? null,
@@ -91,7 +92,7 @@ router.patch("/:id", async (c) => {
   const body = await c.req.json();
   const allowed = [
     "title", "category", "targetValue", "targetUnit", "currentValue",
-    "targetText", "status", "owner", "dueDate", "notes",
+    "targetText", "status", "owner", "dueDate", "notes", "baselineValue",
   ];
   const update = Object.fromEntries(
     Object.entries(body).filter(([k]) => allowed.includes(k))

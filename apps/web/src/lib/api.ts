@@ -67,6 +67,7 @@ export interface KeyResult {
   targetValue: number | null;
   targetUnit: string | null;
   currentValue: number | null;
+  baselineValue: number | null;
   targetText: string | null;
   status: string;
   owner: string | null;

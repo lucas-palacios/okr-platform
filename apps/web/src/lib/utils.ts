@@ -7,9 +7,17 @@ export function cn(...inputs: ClassValue[]) {
 
 export function progressPercent(
   current: number | null,
-  target: number | null
+  target: number | null,
+  baseline?: number | null
 ): number {
-  if (current === null || target === null || target === 0) return 0;
+  if (current === null || target === null) return 0;
+  // "lower is better": baseline > target
+  if (baseline !== null && baseline !== undefined && baseline > target) {
+    const range = baseline - target;
+    if (range === 0) return 0;
+    return Math.min(100, Math.max(0, Math.round(((baseline - current) / range) * 100)));
+  }
+  if (target === 0) return 0;
   return Math.min(100, Math.round((current / target) * 100));
 }
 

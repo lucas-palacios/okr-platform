@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function KrProgressBar({ kr }: Props) {
-  const pct = progressPercent(kr.currentValue, kr.targetValue);
+  const pct = progressPercent(kr.currentValue, kr.targetValue, kr.baselineValue);
   const hasNumeric = kr.targetValue !== null;
   const { data: members = [] } = useMembers();
   const ownerMember = members.find((m) => m.id === kr.owner) ?? null;

@@ -44,6 +44,7 @@ export const keyResults = pgTable("key_results", {
   targetValue: real("target_value"), // numeric target (e.g. 100, 15, 50)
   targetUnit: text("target_unit"), // "%", "min", "hours", "steps"
   currentValue: real("current_value").default(0),
+  baselineValue: real("baseline_value"), // starting point for "lower is better" KRs
   targetText: text("target_text"), // full human-readable target for qualitative KRs
   status: text("status").notNull().default("on-track"), // on-track | at-risk | achieved | missed | not-started
   owner: text("owner"), // team slug or person name
